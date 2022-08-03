@@ -1,0 +1,46 @@
+﻿<mica:MicaWindow x:Class="BatteryProberUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BatteryProberUI"
+        xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
+        mc:Ignorable="d"
+        Title="Battery Prober" Height="200" Width="320"
+        ResizeMode="CanMinimize">
+    <Border Margin="10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border BorderBrush="Black" BorderThickness=".2">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid HorizontalAlignment="Center" Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Image Height="8" VerticalAlignment="Stretch" x:Name="acStatusIcon" Source="{Binding}" Margin="5,0"></Image>
+                        <StackPanel Orientation="Horizontal" Grid.Column="1">
+                            <TextBlock xml:space="preserve">The computer is currently: </TextBlock>
+                            <TextBlock x:Name="acStatusText" Text="{Binding}"></TextBlock>
+                        </StackPanel>
+                    </Grid>
+                    <mica:Button BorderThickness="0" Padding="2" x:Name="refreshBtn" Click="Btn_Click" Grid.Column="2" VerticalAlignment="Stretch">
+                        <Image Height="16" Width="16" x:Name="refreshBtnImage" Source="{Binding}"></Image>
+                    </mica:Button>
+                </Grid>
+            </Border>
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,10,0,0">
+                <mica:Button x:Name="schBtn" Click="Btn_Click" Padding="0,5"  Margin="0,0,0,2.5" Content="{Binding}"></mica:Button>
+                <mica:Button x:Name="extBtn" Click="Btn_Click" Padding="0,5"  Margin="0,2.5">Extract Prober CLI</mica:Button>
+                <mica:Button x:Name="usgBtn" Click="Btn_Click" Padding="0,5"  Margin="0,2.5,0,0">About CLI Usage</mica:Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</mica:MicaWindow>

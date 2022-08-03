@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+   <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ApplicationIcon>appicon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appicon.ico" />
+    <None Remove="appiconlight.ico" />
+    <None Remove="arrow-clockwise-light.png" />
+    <None Remove="arrow-clockwise.png" />
+    <None Remove="BatteryProberCLI.exe" />
+    <None Remove="BatteryProbeTaskTemplate.xml" />
+    <None Remove="circle-fill-green.png" />
+    <None Remove="circle-fill-red.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="BatteryProberCLI.exe" />
+    <EmbeddedResource Include="BatteryProbeTaskTemplate.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MicaWPF" Version="4.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="appicon.ico" />
+    <Resource Include="appiconlight.ico" />
+    <Resource Include="arrow-clockwise-light.png" />
+    <Resource Include="arrow-clockwise.png" />
+    <Resource Include="circle-fill-green.png" />
+    <Resource Include="circle-fill-red.png" />
+  </ItemGroup>
+	
+</Project>
