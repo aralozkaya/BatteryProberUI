@@ -184,21 +184,6 @@ namespace BatteryProberUI
             File.Delete("ProberCLI.exe");
         }
 
-        public static void ListenToAcEvent()
-        {
-            EventLog eventLog = new("System")
-            {
-                Source = "Kernel-Power",
-                EnableRaisingEvents = true
-            };
-            eventLog.EntryWritten += new EntryWrittenEventHandler(OnEntryWritten);
-        }
-
-        private static void OnEntryWritten(object source, EntryWrittenEventArgs entryArg)
-        {
-            if (entryArg.Entry.InstanceId != 105) return;
-        }
-
          const int WM_DWMCOMPOSITIONCHANGED = 0x31A;
          const int WM_THEMECHANGED = 0x31E;
          const int WM_SYSCOLORCHANGE = 0x0015;

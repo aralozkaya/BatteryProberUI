@@ -18,6 +18,7 @@
 
 
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -44,13 +45,13 @@ namespace BatteryProberUI
 
             AcStatusText = SystemPowerStatus.IsAcConnected() ? "Plugged In" : "Not Plugged In";
 
+            AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
+                                                             : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
             SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
 
             RefreshBtnImage = IsLightTheme() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise.png"))
                                              : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise-light.png"));
 
-            AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
-                                                             : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
 
             SchBtnCommand = GeneralHelpers.CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
 
@@ -199,6 +200,8 @@ namespace BatteryProberUI
             IntPtr hwnd = new WindowInteropHelper(mainWindow).Handle;
             HwndSource hsource = HwndSource.FromHwnd(hwnd);
             hsource.AddHook(WndProc);
+
+            ListenToAcEvent();
         }
 
         private void UpdateResourceColors()
@@ -227,6 +230,28 @@ namespace BatteryProberUI
                 UpdateResourceColors();
             }
             return IntPtr.Zero;
+        }
+
+        public void ListenToAcEvent()
+        {
+            EventLog eventLog = new("System")
+            {
+                Source = "Kernel-Power",
+                EnableRaisingEvents = true
+            };
+            eventLog.EntryWritten += new EntryWrittenEventHandler(OnEntryWritten);
+        }
+
+        private void OnEntryWritten(object source, EntryWrittenEventArgs entryArg)
+        {
+            if (entryArg.Entry.InstanceId != 105) return;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                AcStatusText = SystemPowerStatus.IsAcConnected() ? "Plugged In" : "Not Plugged In";
+
+                AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
+                                                                 : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
+            }); 
         }
     }
 }
