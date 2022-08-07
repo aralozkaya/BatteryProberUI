@@ -20,10 +20,10 @@
 using System;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MicaWPF.Services;
+using Microsoft.Win32;
 
 namespace BatteryProberUI
 {
@@ -47,6 +47,7 @@ namespace BatteryProberUI
 
             AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
                                                              : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
+
             SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
 
             RefreshBtnImage = IsLightTheme() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise.png"))
@@ -197,9 +198,7 @@ namespace BatteryProberUI
 
             UpdateResourceColors();
 
-            IntPtr hwnd = new WindowInteropHelper(mainWindow).Handle;
-            HwndSource hsource = HwndSource.FromHwnd(hwnd);
-            hsource.AddHook(WndProc);
+            SystemEvents.UserPreferenceChanged += new UserPreferenceChangedEventHandler(ListenThemeChange);
 
             ListenToAcEvent();
         }
@@ -220,18 +219,6 @@ namespace BatteryProberUI
             }
         }
 
-        private const int WM_DWMCOMPOSITIONCHANGED = 0x31A;
-        private const int WM_THEMECHANGED = 0x31E;
-        private const int WM_SYSCOLORCHANGE = 0x0015;
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (msg == WM_DWMCOMPOSITIONCHANGED || msg == WM_THEMECHANGED || msg == WM_SYSCOLORCHANGE)
-            {
-                UpdateResourceColors();
-            }
-            return IntPtr.Zero;
-        }
-
         public void ListenToAcEvent()
         {
             EventLog eventLog = new("System")
@@ -242,6 +229,13 @@ namespace BatteryProberUI
             eventLog.EntryWritten += new EntryWrittenEventHandler(OnEntryWritten);
         }
 
+        public void ListenThemeChange(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.General)
+            {
+                Application.Current.Dispatcher.Invoke(() => UpdateResourceColors());
+            }
+        }
         private void OnEntryWritten(object source, EntryWrittenEventArgs entryArg)
         {
             if (entryArg.Entry.InstanceId != 105) return;
