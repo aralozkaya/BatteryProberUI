@@ -83,6 +83,7 @@ namespace BatteryProberUI
 
                 if (MessageBox.Show(mes, cap, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
                 ElevateAndExit();
+                return;
             }
             
             string? pathIfAC = OpenExeBatVbs("Choose File to Run When AC Connects");
@@ -132,6 +133,7 @@ namespace BatteryProberUI
 
                 if (MessageBox.Show(mes, cap, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
                 ElevateAndExit();
+                return;
             }
 
             string message = "Are you sure to delete the task?";

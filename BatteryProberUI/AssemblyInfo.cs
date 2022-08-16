@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Reflection;
 using System.Windows;
 
 [assembly: ThemeInfo(
@@ -26,3 +27,7 @@ using System.Windows;
                                               //(used if a resource is not found in the page,
                                               // app, or any theme specific resource dictionaries)
 )]
+[assembly: AssemblyTitleAttribute("Battery Prober")]
+[assembly: AssemblyDescriptionAttribute("Battery Prober UI")]
+[assembly: AssemblyProductAttribute("Battery Prober UI")]
+[assembly: AssemblyCopyrightAttribute("© Ibrahim Aral Ozkaya 2022")]
