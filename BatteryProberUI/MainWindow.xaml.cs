@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using MicaWPF.Controls;
+using System.Windows;
 
 namespace BatteryProberUI
 {
@@ -24,7 +24,7 @@ namespace BatteryProberUI
     /// Interaction logic for MainWindow.xaml
     /// </summary>
 
-    public partial class MainWindow : MicaWindow
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {

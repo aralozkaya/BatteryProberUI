@@ -1,11 +1,13 @@
-﻿<mica:MicaWindow x:Class="BatteryProberUI.MainWindow"
+﻿<Window x:Class="BatteryProberUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatteryProberUI"
-        xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF" d:DataContext="{d:DesignInstance Type=local:ProberViewModel}"
-                 mc:Ignorable="d"
+        xmlns:mica="clr-namespace:MicaWPF.Controls;assembly=MicaWPF"
+        d:DataContext="{d:DesignInstance Type=local:ProberViewModel}"
+        Background="Transparent"
+        mc:Ignorable="d"
         Title="Battery Prober" Height="200" Width="320"
         ResizeMode="CanMinimize">
     <Border Margin="10">
@@ -14,7 +16,7 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <Border BorderBrush="Black" BorderThickness=".2">
+            <Border>
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -43,4 +45,4 @@
             </StackPanel>
         </Grid>
     </Border>
-</mica:MicaWindow>
+</Window>

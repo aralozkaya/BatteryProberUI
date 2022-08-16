@@ -24,12 +24,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MicaWPF.Services;
 using Microsoft.Win32;
+using static BatteryProberUI.SystemPowerStatus;
+using static BatteryProberUI.GeneralHelpers;
+using static BatteryProberUI.DwmConfig;
+using System.Windows.Interop;
 
 namespace BatteryProberUI
 {
     public class ProberViewModel : BaseViewModel
     {
-        private MainWindow mainWindow { get; set; }
+        private MainWindow MainWindowVar { get; }
+        private IntPtr MainWindowHandle { get; set; }
         public string AcStatusText { get; set; }
         public string SchBtnText { get; set; }
         public ImageSource RefreshBtnImage { get; set; }
@@ -40,21 +45,22 @@ namespace BatteryProberUI
         public RelayCommand UsgBtnCommand { get; set; }
         public ProberViewModel(MainWindow mainWindow)
         {
-            this.mainWindow = mainWindow;
+            this.MainWindowVar = mainWindow;
+
             mainWindow.Loaded += OnInitialize;
 
-            AcStatusText = SystemPowerStatus.IsAcConnected() ? "Plugged In" : "Not Plugged In";
+            AcStatusText = IsAcConnected() ? "Plugged In" : "Not Plugged In";
 
-            AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
+            AcStatusIcon = IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
                                                              : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
 
-            SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
+            SchBtnText = CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
 
             RefreshBtnImage = IsLightTheme() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise.png"))
                                              : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise-light.png"));
 
 
-            SchBtnCommand = GeneralHelpers.CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
+            SchBtnCommand = CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
 
             ExtractBtnCommand = new RelayCommand(ExtractCLI);
 
@@ -62,7 +68,7 @@ namespace BatteryProberUI
 
             RefreshBtnCommand = new RelayCommand(Refresh);
         }
-        private bool IsLightTheme()
+        private static bool IsLightTheme()
         {
             var themeService = ThemeService.GetCurrent();
             return themeService.CurrentTheme == MicaWPF.WindowsTheme.Light;
@@ -70,26 +76,25 @@ namespace BatteryProberUI
 
         private void Schedule()
         {
-            if (!GeneralHelpers.IsAdmin())
+            if (!IsAdmin())
             {
                 string mes = "This Action Requires Administrator Privileges.\nWould You like to restart the application in Administrator mode?";
                 string cap = "Administrator Rights Required";
 
                 if (MessageBox.Show(mes, cap, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-                GeneralHelpers.ElevateAndExit();
+                ElevateAndExit();
             }
-
-            GeneralHelpers.ExtractCliExe();
-            GeneralHelpers.CopyFileToSystem();
-            GeneralHelpers.ExtractTemplateXML();
             
-            string? pathIfAC = GeneralHelpers.OpenExeBatVbs("Choose File to Run When AC Connects");
+            string? pathIfAC = OpenExeBatVbs("Choose File to Run When AC Connects");
             if (pathIfAC == null) return;
 
-            string? pathIfNotAC = GeneralHelpers.OpenExeBatVbs("Choose File to Run When AC Disconnects");
+            string? pathIfNotAC = OpenExeBatVbs("Choose File to Run When AC Disconnects");
             if (pathIfNotAC == null) return;
 
-            GeneralHelpers.ExtractTemplateXML();
+            ExtractCliExe();
+            CopyFileToSystem();
+            ExtractTemplateXML();
+            
             XmlHelper xmlDoc = new("BatteryProbeTask.xml");
             MyXmlNode root = xmlDoc.root;
 
@@ -105,28 +110,28 @@ namespace BatteryProberUI
 
             xmlDoc.SaveXml();
 
-            GeneralHelpers.CreateTask();
+            CreateTask();
 
             string message = "Task Successfully Created";
             string caption = "Creating Task";
 
             MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             
-            GeneralHelpers.DeleteArtifacts();
+            DeleteArtifacts();
 
-            SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
-            SchBtnCommand = GeneralHelpers.CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
+            SchBtnText = CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
+            SchBtnCommand = CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
         }
 
         private void Delete()
         {
-            if (!GeneralHelpers.IsAdmin())
+            if (!IsAdmin())
             {
                 string mes = "This Action Requires Administrator Privileges.\nWould You like to restart the application in Administrator mode?";
                 string cap = "Administrator Rights Required";
 
                 if (MessageBox.Show(mes, cap, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-                GeneralHelpers.ElevateAndExit();
+                ElevateAndExit();
             }
 
             string message = "Are you sure to delete the task?";
@@ -136,19 +141,19 @@ namespace BatteryProberUI
 
             if (res != MessageBoxResult.Yes) return;
 
-            GeneralHelpers.DeleteFileFromSystem();
-            GeneralHelpers.DeleteTask();
+            DeleteFileFromSystem();
+            DeleteTask();
 
             message = "Task Successfully Deleted";
             MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
 
-            SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
-            SchBtnCommand = GeneralHelpers.CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
+            SchBtnText = CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
+            SchBtnCommand = CheckTask() ? new RelayCommand(Delete) : new RelayCommand(Schedule);
         }
 
         private void ExtractCLI()
         {
-            if (GeneralHelpers.ExtractCliExe())
+            if (ExtractCliExe())
             {
                 string message = "ProberCLI.exe has been successfully extracted";
                 string caption = "Success";
@@ -182,11 +187,11 @@ namespace BatteryProberUI
 
         private void Refresh()
         {
-            AcStatusText = SystemPowerStatus.IsAcConnected() ? "Plugged In" : "Not Plugged In";
+            AcStatusText = IsAcConnected() ? "Plugged In" : "Not Plugged In";
 
-            SchBtnText = GeneralHelpers.CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
+            SchBtnText = CheckTask() ? "Delete Prober Task" : "Schedule Prober Task";
 
-            AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
+            AcStatusIcon = IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
                                                              : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
         }
 
@@ -195,6 +200,10 @@ namespace BatteryProberUI
             var themeService = ThemeService.GetCurrent();
             var currentTheme = ThemeService.GetWindowsTheme();
             themeService.ChangeTheme(currentTheme);
+
+            MainWindowHandle = new WindowInteropHelper(MainWindowVar).Handle;
+
+            EnableMica();
 
             UpdateResourceColors();
 
@@ -205,17 +214,19 @@ namespace BatteryProberUI
 
         private void UpdateResourceColors()
         {
-            if (mainWindow == null) return;
+            if (MainWindowVar == null) return;
 
             if (IsLightTheme())
             {
+                SetWindowAttribute(MainWindowHandle, DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, 0);
                 RefreshBtnImage = new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise.png"));
-                mainWindow.Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/Icons/appicon.ico"));
+                MainWindowVar.Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/Icons/appicon.ico"));
             }
             else
             {
+                SetWindowAttribute(MainWindowHandle, DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE, 1);
                 RefreshBtnImage = new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/arrow-clockwise-light.png"));
-                mainWindow.Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/Icons/appiconlight.ico"));
+                MainWindowVar.Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/Icons/appiconlight.ico"));
             }
         }
 
@@ -241,11 +252,29 @@ namespace BatteryProberUI
             if (entryArg.Entry.InstanceId != 105) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                AcStatusText = SystemPowerStatus.IsAcConnected() ? "Plugged In" : "Not Plugged In";
+                AcStatusText = IsAcConnected() ? "Plugged In" : "Not Plugged In";
 
-                AcStatusIcon = SystemPowerStatus.IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
+                AcStatusIcon = IsAcConnected() ? new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-green.png"))
                                                                  : new BitmapImage(new Uri("pack://application:,,,/Assets/Icons/circle-fill-red.png"));
             }); 
+        }
+
+        private void EnableMica()
+        {
+            HwndSource mainWindowSrc = HwndSource.FromHwnd(MainWindowHandle);
+            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+
+            MARGINS margins = new()
+            {
+                cxLeftWidth = -1,
+                cxRightWidth = -1,
+                cyTopHeight = -1,
+                cyBottomHeight = -1
+            };
+
+            ExtendFrame(MainWindowHandle, margins);
+
+            SetWindowAttribute(MainWindowHandle, DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE, (int)DWM_SYSTEMBACKDROP_TYPE.Mica);
         }
     }
 }
