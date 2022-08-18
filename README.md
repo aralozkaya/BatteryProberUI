@@ -2,7 +2,7 @@
 Implementation of the deprecated Battery Prober project using WPF (C#) with a CLI interface (C++)
 
 BatteryProberUI is a GUI frontend for scheduling commands (.bat, .vbs or .exe files) to be executed when a laptop is (dis)connected to AC power.
-While the AC Power status change can be followed via Event Viewer, using this information via Task Manager and checking whether the status change is a "plug" or "unplug" is tedious involving custom event filters.
+While the AC Power status change can be followed via Event Viewer, using this information via Task Scheduler and checking whether the status change is a "plug" or "unplug" is tedious involving custom event filters.
 
 ### UI
 BatteryProberUI a WPF application created with a modern look using [MicaWPF](https://github.com/Simnico99/MicaWPF) package.
